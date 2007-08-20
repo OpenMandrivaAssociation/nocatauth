@@ -33,7 +33,7 @@ your network.  A sample vhost stanza is provided.
 %package gateway
 Summary:	NoCatauth gateway
 Group:		Networking/Remote access
-Requires:	iptables iproute2 /sbin/chkconfig gnupg
+Requires:	iptables iproute2 chkconfig gnupg
 BuildArchitectures:	noarch
 Prereq:		rpm-helper
 
