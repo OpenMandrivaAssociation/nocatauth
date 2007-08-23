@@ -3,7 +3,7 @@
 Summary:	NoCatAuth is a third party wireless authentication system
 Name:		nocatauth
 Version:	0.82
-Release: 	%mkrel 5
+Release: 	%mkrel 6
 License:        GPL
 Group:		Networking/Remote access
 Source0:	http://nocat.net/download/NoCatAuth/NoCatAuth-0.82.tar.bz2
