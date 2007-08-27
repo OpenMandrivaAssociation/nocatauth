@@ -35,7 +35,7 @@ Summary:	NoCatauth gateway
 Group:		Networking/Remote access
 Requires:	iptables iproute2 chkconfig gnupg
 BuildArchitectures:	noarch
-Prereq:		rpm-helper
+Requires(post,preun):		rpm-helper
 
 %description gateway
 The NoCatAuth gateway manages local connections, sets bandwidth throttling 
