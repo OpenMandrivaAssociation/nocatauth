@@ -11,6 +11,7 @@ Source1:	pgp-response.txt
 Source2:        NoCatAuthSetup.txt
 Patch0:		%{name}-mdk-build.patch
 URL:            http://nocat.net
+BuildRoot:	%{_tmppath}/%{name}-root
 BuildRequires:	iptables gnupg
 BuildArchitectures:	noarch
 Requires:	webserver mod_ssl.so gnupg
