@@ -1,6 +1,6 @@
 %define realname NoCatAuth
 %define sname nocat
-Summary:	NoCatAuth is a third party wireless authentication system
+Summary:	Third party wireless authentication system
 Name:		nocatauth
 Version:	0.82
 Release: 	%mkrel 6
