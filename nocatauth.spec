@@ -3,7 +3,7 @@
 Summary:	Third party wireless authentication system
 Name:		nocatauth
 Version:	0.82
-Release: 	%mkrel 7
+Release: 	%mkrel 8
 License:        GPL
 Group:		Networking/Remote access
 Source0:	http://nocat.net/download/NoCatAuth/NoCatAuth-0.82.tar.bz2
@@ -14,7 +14,7 @@ URL:            http://nocat.net
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildRequires:	iptables gnupg
 BuildArchitectures:	noarch
-Requires:	webserver mod_ssl.so gnupg
+Requires:	webserver mod_ssl gnupg
 
 %description
 The NoCatAuth project implements a third party wireless authentication 
