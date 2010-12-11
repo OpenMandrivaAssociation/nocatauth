@@ -3,7 +3,7 @@
 Summary:	Third party wireless authentication system
 Name:		nocatauth
 Version:	0.82
-Release: 	%mkrel 10
+Release: 	%mkrel 11
 License:        GPL
 Group:		Networking/Remote access
 Source0:	http://nocat.net/download/NoCatAuth/NoCatAuth-0.82.tar.bz2
