@@ -1,0 +1,172 @@
+--- NoCatAuth-0.82/etc/nocat.rc.mdk	2001-08-20 20:11:32.000000000 +0200
++++ NoCatAuth-0.82/etc/nocat.rc	2004-12-16 02:16:30.220852682 +0100
+@@ -7,30 +7,49 @@
+ # or copy it to /etc/rc.d/init.d and symlink it
+ # to your runlevel.
+ #
++# chkconfig: 2345 30 97
++# description: nocathauth-gateway is the gateway portion of the \
++#		nocatauth wireless network portal systtem
++# processname: gateway
++# config: /etc/nocat/gateway.conf
++#
++# Source function library.
++. /etc/rc.d/init.d/functions
++
+ # Edit the following line if you installed the
+ # nocat software somewhere else.
+ #
+-NC=/usr/local/nocat
++NC=/usr/share/nocat/gw
+ 
+ export PERL5LIB=$NC/lib:$PERL5LIB
+-export NOCAT=$NC/nocat.conf
++export NOCAT=/etc/nocat/gateway.conf
+ 
+ case "$1" in
+   start)
+         echo "Starting the NoCat gateway..."
+-	$NC/bin/gateway
+-        ;;
++	daemon $NC/bin/gateway
++	RETVAL=$?
++    	echo
++    	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/gateway
++    	;;
+   stop)
+ 	echo "Stopping the NoCat gateway..."
+-	killall gateway
++	daemon killall gateway
++	RETVAL=$?
++    	echo
++    	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/gateway
+         ;;
+-  restart)
+-        $0 stop
++  restart|reload)
++	$0 stop
+ 	sleep 1
+-        $0 start
+-        ;;
++	$0 start
++	;;
++  status)
++	status gateway
++	RETVAL=$?
++	;;
+   *)
+-        echo "Usage: $0 {start|stop|restart}"
++        echo "Usage: $0 {start|stop|restart|reload|status}"
+         exit 1
+ esac
+ 
+--- NoCatAuth-0.82/etc/authserv.conf.mdk	2002-03-06 11:52:21.000000000 +0100
++++ NoCatAuth-0.82/etc/authserv.conf	2004-12-16 03:24:21.664405264 +0100
+@@ -11,18 +11,48 @@
+ # Put this in a virtual host entry, if needed, and don't forget
+ # the trailing slash.
+ 
+-ScriptAlias /cgi-bin/ /usr/local/nocat/cgi-bin/
++# ScriptAlias /cgi-bin/ /usr/share/nocat/cgi-bin/
++
++# Sample virtual host entry - corresponds with Mandriva packaging.
++# On my test machine eth1 is 192.168.192.33, with eth1:9 set to
++# 192.168.192.34. (eth0 disabled).  This allows normal Apache
++# operation, as well a cgi-bin, with .34 acting as the nocat auth
++# server.  Uncomment the following lines and change the IP to agree
++# with your own network.
++
++#<VirtualHost 192.168.192.34:443>
++#   DocumentRoot /usr/share/nocat/authserv/htdocs
++#   Options Indexes FollowSymLinks
++#   ScriptAlias /cgi-bin/ /usr/share/nocat/authserv/cgi-bin/
++#   SSLEngine on
++#   SSLCertificateFile /etc/ssl/apache2/server.crt
++#   SSLCertificateKeyFile /etc/ssl/apache2/server.key
++#</VirtualHost>
++
++<Directory /usr/share/nocat/authserv/cgi-bin>
++    AllowOverride All
++    Options ExecCGI
++    <IfModule mod_access.c>
++      Order allow,deny
++      Allow from all
++    </IfModule>
+ 
+-<Directory /usr/local/nocat/cgi-bin>
+     ##
+     # $PERL5LIB tells Perl where to find the NoCat libraries.
+     ##
+-    SetEnv PERL5LIB /usr/local/nocat/lib
++    SetEnv PERL5LIB /usr/share/nocat/authserv/lib
+ 
+     ##
+     # $NOCAT tells NoCat where to find its configuration file.
+     ##
+-    SetEnv NOCAT    /usr/local/nocat/nocat.conf
++    SetEnv NOCAT    /etc/nocat/authserv.conf
++</Directory>
++
++<Directory /usr/share/nocat/authserv/htdocs/images>
++    <IfModule mod_access.c>
++      Order allow,deny
++      Allow from all
++    </IfModule>
+ </Directory>
+ 
+ #
+--- NoCatAuth-0.82/Makefile.mdk	2003-05-17 16:35:14.000000000 +0200
++++ NoCatAuth-0.82/Makefile	2004-12-16 02:16:30.221852700 +0100
+@@ -118,7 +118,7 @@
+ pgpkey: check_gpg
+ 	[ -d $(TARGET)/pgp ] || mkdir $(TARGET)/pgp
+ 	chmod 700 $(TARGET)/pgp
+-	gpg --homedir=$(TARGET)/pgp --gen-key
++	gpg --homedir=$(TARGET)/pgp --gen-key --batch pgp-response.txt
+ 	$(INSTALL) $(TARGET)/pgp/pubring.gpg $(TARGET)/trustedkeys.gpg
+ 	@echo
+ 	@echo "Be sure to make your $(PREFIX)/pgp directory readable *only* by the user"
+--- NoCatAuth-0.82/authserv.conf.mdk	2003-03-17 23:46:11.000000000 +0100
++++ NoCatAuth-0.82/authserv.conf	2004-12-16 03:25:02.919107591 +0100
+@@ -38,7 +38,7 @@
+ # DataSource -- specifies what to authenticate against.
+ #   Possible values are DBI, Passwd, LDAP, RADIUS, PAM, Samba, IMAP, NIS.
+ #
+-DataSource	DBI
++DataSource	Passwd
+ 
+ ##
+ # Auth service database settings.
+@@ -171,9 +171,9 @@
+ 
+ ## Alternately, you can use the Passwd data source. 
+ #
+-# UserFile	    /usr/local/nocat/etc/passwd
+-# GroupUserFile	    /usr/local/nocat/etc/group
+-# GroupAdminFile    /usr/local/nocat/etc/groupadm
++UserFile	    /usr/local/nocat/etc/passwd
++GroupUserFile	    /usr/local/nocat/etc/group
++GroupAdminFile    /usr/local/nocat/etc/groupadm
+ #
+ # The format of these files is as follows:
+ #
+@@ -249,7 +249,7 @@
+ 
+ ###### Auth service user messages. Should be self-explanatory.
+ #
+-LoginGreeting   Greetings! Welcome to the NoCat Network.
++LoginGreeting   Greetings! Welcome to the Mandriva Linux NoCat Network.
+ LoginMissing    Please fill in all fields!
+ LoginBadUser    That e-mail address is unknown. Please try again.
+ LoginBadPass	That e-mail and password do not match. Please try again.
+--- NoCatAuth-0.82/gateway.conf.mdk	2003-02-11 02:59:09.000000000 +0100
++++ NoCatAuth-0.82/gateway.conf	2004-12-16 02:16:30.222852717 +0100
+@@ -19,7 +19,7 @@
+ # GatewayName -- The name of this gateway, to be optionally displayed
+ #   on the splash and status pages. Any short string of text will do.
+ #
+-GatewayName	the NoCat Network
++GatewayName	The Mandriva Linux NoCat Network
+ 
+ ##
+ #
