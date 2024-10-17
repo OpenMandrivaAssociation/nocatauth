@@ -10,7 +10,7 @@ Source0:	http://nocat.net/download/NoCatAuth/NoCatAuth-0.82.tar.bz2
 Source1:	pgp-response.txt
 Source2:        NoCatAuthSetup.txt
 Patch0:		%{name}-mdk-build.patch
-URL:            http://nocat.net
+URL:            https://nocat.net
 BuildRoot:	%{_tmppath}/%{name}-root
 BuildRequires:	iptables gnupg
 BuildArchitectures:	noarch
