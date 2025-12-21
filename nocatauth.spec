@@ -12,6 +12,7 @@ Source2:        NoCatAuthSetup.txt
 Patch0:		%{name}-mdk-build.patch
 URL:            https://nocat.net
 BuildRoot:	%{_tmppath}/%{name}-root
+BuildRequires:	make
 BuildRequires:	iptables gnupg
 BuildArchitectures:	noarch
 Requires:	webserver mod_ssl gnupg
